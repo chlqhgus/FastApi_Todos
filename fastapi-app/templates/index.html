@@ -11,6 +11,7 @@
     <form id="todo-form">
       <input type="text" id="title" placeholder="Title" required />
       <input type="text" id="description" placeholder="Description" required />
+      <input type="date" id="due_date" />
       <button type="submit">Add To-Do</button>
     </form>
     <script>
@@ -37,6 +38,12 @@
           status.style.marginLeft = "8px";
           status.style.color = "#666";
 
+          // 마감일
+          const due = document.createElement("span");
+          due.textContent = todo.due_date ? `마감일: ${todo.due_date}` : "";
+          due.style.marginLeft = "8px";
+          due.style.color = "#999";
+
           checkbox.onchange = async () => {
             const completed = checkbox.checked;
             text.style.textDecoration = completed ? "line-through" : "none";
@@ -50,6 +57,7 @@
                 title: todo.title,
                 description: todo.description,
                 completed,
+                due_date: todo.due_date || null,
               }),
             });
           };
@@ -62,7 +70,7 @@
           const deleteButton = document.createElement("button");
           deleteButton.textContent = "Delete";
           deleteButton.onclick = () => deleteTodo(todo.id);
-          li.append(checkbox, text, status, editButton, deleteButton);
+          li.append(checkbox, text, status, due, editButton, deleteButton);
           todoList.appendChild(li);
         });
       }
@@ -98,6 +106,7 @@
           event.preventDefault();
           const title = document.getElementById("title").value;
           const description = document.getElementById("description").value;
+          const due_date = document.getElementById("due_date").value;
           const response = await fetch("/todos", {
             method: "POST",
             headers: {
@@ -108,6 +117,7 @@
               title,
               description,
               completed: false,
+              due_date: due_date || null,
             }),
           });
           if (response.ok) {

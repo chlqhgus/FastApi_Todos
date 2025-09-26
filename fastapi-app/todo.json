@@ -1,8 +1,9 @@
 [
     {
-        "id": 1758871200037,
-        "title": "\ud560 \uac70",
-        "description": "\uc124\uba85",
-        "completed": false
+        "id": 1758871555909,
+        "title": "\uc624\ud508\uc18c\uc2a4 \uacfc\uc81c \uc81c\ucd9c",
+        "description": "\uacfc\uc81c \uc81c\ucd9c\ud558\uae30",
+        "completed": true,
+        "due_date": "2025-09-30"
     }
 ]
