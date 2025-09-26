@@ -24,12 +24,23 @@
           const checkbox = document.createElement("input");
           checkbox.type = "checkbox";
           checkbox.checked = todo.completed;
+
+          // 제목과 설명
           const text = document.createElement("span");
           text.textContent = `${todo.title}: ${todo.description}`;
+          text.style.marginLeft = "8px";
           text.style.textDecoration = todo.completed ? "line-through" : "none";
+
+          // 상태 표시 (진행중 / 완료)
+          const status = document.createElement("span");
+          status.textContent = todo.completed ? "완료" : "진행중";
+          status.style.marginLeft = "8px";
+          status.style.color = "#666";
+
           checkbox.onchange = async () => {
             const completed = checkbox.checked;
             text.style.textDecoration = completed ? "line-through" : "none";
+            status.textContent = completed ? "완료" : "진행중";
 
             await fetch(`/todos/${todo.id}`, {
               method: "PUT",
@@ -42,17 +53,16 @@
               }),
             });
           };
-          li.textContent = `${todo.title}: ${todo.description} (Completed: ${todo.completed})`;
+
+          // 편집/삭제 버튼
           const editButton = document.createElement("button");
           editButton.textContent = "Edit";
           editButton.onclick = () => editTodo(todo.id);
+
           const deleteButton = document.createElement("button");
           deleteButton.textContent = "Delete";
           deleteButton.onclick = () => deleteTodo(todo.id);
-          li.appendChild(checkbox);
-          li.appendChild(text);
-          li.appendChild(editButton);
-          li.appendChild(deleteButton);
+          li.append(checkbox, text, status, editButton, deleteButton);
           todoList.appendChild(li);
         });
       }
