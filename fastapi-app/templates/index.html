@@ -1,53 +1,532 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>To-Do List</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+        color: #333;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+      }
+
+      .header h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+        font-weight: 700;
+      }
+
+      .header p {
+        opacity: 0.9;
+        font-size: 1.1em;
+      }
+
+      .todo-form {
+        padding: 30px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.9em;
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+      }
+
+      input[type="text"],
+      input[type="date"] {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 1em;
+        transition: all 0.3s ease;
+        font-family: inherit;
+      }
+
+      input[type="text"]:focus,
+      input[type="date"]:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .btn {
+        padding: 12px 30px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: inherit;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        width: 100%;
+        margin-top: 10px;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-primary:active {
+        transform: translateY(0);
+      }
+
+      .btn-edit {
+        background: #17a2b8;
+        color: white;
+        padding: 8px 15px;
+        font-size: 0.9em;
+      }
+
+      .btn-edit:hover {
+        background: #138496;
+        transform: translateY(-1px);
+      }
+
+      .btn-delete {
+        background: #dc3545;
+        color: white;
+        padding: 8px 15px;
+        font-size: 0.9em;
+      }
+
+      .btn-delete:hover {
+        background: #c82333;
+        transform: translateY(-1px);
+      }
+
+      .todo-list {
+        padding: 30px;
+        list-style: none;
+      }
+
+      .todo-item {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+        animation: slideIn 0.3s ease;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .todo-item:hover {
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+      }
+
+      .todo-item.completed {
+        background: #f8f9fa;
+        opacity: 0.8;
+      }
+
+      .todo-content {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+        margin-bottom: 15px;
+      }
+
+      .todo-checkbox {
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        margin-top: 2px;
+        accent-color: #667eea;
+      }
+
+      .todo-text {
+        flex: 1;
+      }
+
+      .todo-title {
+        font-size: 1.2em;
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 5px;
+      }
+
+      .todo-description {
+        color: #6c757d;
+        font-size: 0.95em;
+        line-height: 1.5;
+      }
+
+      .todo-item.completed .todo-title,
+      .todo-item.completed .todo-description {
+        text-decoration: line-through;
+        color: #adb5bd;
+      }
+
+      .todo-meta {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+
+      .todo-status {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85em;
+        font-weight: 600;
+      }
+
+      .todo-status.pending {
+        background: #fff3cd;
+        color: #856404;
+      }
+
+      .todo-status.completed {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      .todo-due-date {
+        display: inline-block;
+        padding: 4px 12px;
+        background: #e7f3ff;
+        color: #004085;
+        border-radius: 20px;
+        font-size: 0.85em;
+        font-weight: 500;
+      }
+
+      .todo-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #e9ecef;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6c757d;
+      }
+
+      .empty-state-icon {
+        font-size: 4em;
+        margin-bottom: 20px;
+        opacity: 0.5;
+      }
+
+      .empty-state p {
+        font-size: 1.1em;
+      }
+
+      .edit-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .edit-modal.active {
+        display: flex;
+      }
+
+      .edit-modal-content {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      .edit-modal-content h2 {
+        margin-bottom: 20px;
+        color: #212529;
+      }
+
+      .edit-modal-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .btn-cancel {
+        background: #6c757d;
+        color: white;
+        flex: 1;
+      }
+
+      .btn-cancel:hover {
+        background: #5a6268;
+      }
+
+      .btn-save {
+        background: #28a745;
+        color: white;
+        flex: 1;
+      }
+
+      .btn-save:hover {
+        background: #218838;
+      }
+
+      @media (max-width: 600px) {
+        .form-row {
+          grid-template-columns: 1fr;
+        }
+
+        .header h1 {
+          font-size: 2em;
+        }
+
+        .todo-actions {
+          flex-direction: column;
+        }
+
+        .btn-edit,
+        .btn-delete {
+          width: 100%;
+        }
+      }
+    </style>
   </head>
   <body>
-    <h1>To-Do List</h1>
-    <ul id="todo-list"></ul>
-    <form id="todo-form">
-      <input type="text" id="title" placeholder="Title" required />
-      <input type="text" id="description" placeholder="Description" required />
-      <input type="date" id="due_date" />
-      <button type="submit">Add To-Do</button>
-    </form>
+    <div class="container">
+      <div class="header">
+        <h1>📝 To-Do List</h1>
+        <p>할 일을 관리하고 생산성을 높이세요</p>
+      </div>
+
+      <form id="todo-form" class="todo-form">
+        <div class="form-group">
+          <label for="title">제목</label>
+          <input
+            type="text"
+            id="title"
+            placeholder="할 일 제목을 입력하세요"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="description">설명</label>
+          <input
+            type="text"
+            id="description"
+            placeholder="상세 설명을 입력하세요"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="due_date">마감일</label>
+          <input type="date" id="due_date" />
+        </div>
+        <button type="submit" class="btn btn-primary">➕ 할 일 추가</button>
+      </form>
+
+      <ul id="todo-list" class="todo-list"></ul>
+    </div>
+
+    <!-- 편집 모달 -->
+    <div id="edit-modal" class="edit-modal">
+      <div class="edit-modal-content">
+        <h2>할 일 수정</h2>
+        <div class="form-group">
+          <label for="edit-title">제목</label>
+          <input type="text" id="edit-title" required />
+        </div>
+        <div class="form-group">
+          <label for="edit-description">설명</label>
+          <input type="text" id="edit-description" required />
+        </div>
+        <div class="form-group">
+          <label for="edit-due-date">마감일</label>
+          <input type="date" id="edit-due-date" />
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="edit-completed" />
+            완료됨
+          </label>
+        </div>
+        <div class="edit-modal-actions">
+          <button
+            type="button"
+            class="btn btn-cancel"
+            onclick="closeEditModal()"
+          >
+            취소
+          </button>
+          <button type="button" class="btn btn-save" onclick="saveEdit()">
+            저장
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script>
+      let editingTodoId = null;
+
       async function fetchTodos() {
         const response = await fetch("/todos");
         const todos = await response.json();
         const todoList = document.getElementById("todo-list");
         todoList.innerHTML = "";
+
+        if (todos.length === 0) {
+          todoList.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-icon">📋</div>
+              <p>아직 할 일이 없습니다.<br>위 폼을 사용하여 새로운 할 일을 추가하세요!</p>
+            </div>
+          `;
+          return;
+        }
+
         todos.forEach((todo) => {
           const li = document.createElement("li");
+          li.className = `todo-item ${todo.completed ? "completed" : ""}`;
+
           const checkbox = document.createElement("input");
           checkbox.type = "checkbox";
+          checkbox.className = "todo-checkbox";
           checkbox.checked = todo.completed;
 
-          // 제목과 설명
-          const text = document.createElement("span");
-          text.textContent = `${todo.title}: ${todo.description}`;
-          text.style.marginLeft = "8px";
-          text.style.textDecoration = todo.completed ? "line-through" : "none";
+          const contentDiv = document.createElement("div");
+          contentDiv.className = "todo-content";
 
-          // 상태 표시 (진행중 / 완료)
-          const status = document.createElement("span");
-          status.textContent = todo.completed ? "완료" : "진행중";
-          status.style.marginLeft = "8px";
-          status.style.color = "#666";
+          const textDiv = document.createElement("div");
+          textDiv.className = "todo-text";
 
-          // 마감일
-          const due = document.createElement("span");
-          due.textContent = todo.due_date ? `마감일: ${todo.due_date}` : "";
-          due.style.marginLeft = "8px";
-          due.style.color = "#999";
+          const titleSpan = document.createElement("div");
+          titleSpan.className = "todo-title";
+          titleSpan.textContent = todo.title;
+
+          const descSpan = document.createElement("div");
+          descSpan.className = "todo-description";
+          descSpan.textContent = todo.description;
+
+          textDiv.appendChild(titleSpan);
+          textDiv.appendChild(descSpan);
+
+          const metaDiv = document.createElement("div");
+          metaDiv.className = "todo-meta";
+
+          const statusSpan = document.createElement("span");
+          statusSpan.className = `todo-status ${
+            todo.completed ? "completed" : "pending"
+          }`;
+          statusSpan.textContent = todo.completed ? "✓ 완료" : "⏳ 진행중";
+
+          metaDiv.appendChild(statusSpan);
+
+          if (todo.due_date) {
+            const dueSpan = document.createElement("span");
+            dueSpan.className = "todo-due-date";
+            const dueDate = new Date(todo.due_date);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            dueDate.setHours(0, 0, 0, 0);
+
+            if (dueDate < today && !todo.completed) {
+              dueSpan.style.background = "#f8d7da";
+              dueSpan.style.color = "#721c24";
+              dueSpan.textContent = `⚠️ 마감일: ${todo.due_date} (지남)`;
+            } else if (
+              dueDate.getTime() === today.getTime() &&
+              !todo.completed
+            ) {
+              dueSpan.style.background = "#fff3cd";
+              dueSpan.style.color = "#856404";
+              dueSpan.textContent = `⏰ 마감일: ${todo.due_date} (오늘)`;
+            } else {
+              dueSpan.textContent = `📅 마감일: ${todo.due_date}`;
+            }
+            metaDiv.appendChild(dueSpan);
+          }
+
+          const actionsDiv = document.createElement("div");
+          actionsDiv.className = "todo-actions";
+
+          const editButton = document.createElement("button");
+          editButton.className = "btn btn-edit";
+          editButton.textContent = "✏️ 수정";
+          editButton.onclick = () => openEditModal(todo);
+
+          const deleteButton = document.createElement("button");
+          deleteButton.className = "btn btn-delete";
+          deleteButton.textContent = "🗑️ 삭제";
+          deleteButton.onclick = () => deleteTodo(todo.id);
+
+          actionsDiv.appendChild(editButton);
+          actionsDiv.appendChild(deleteButton);
 
           checkbox.onchange = async () => {
             const completed = checkbox.checked;
-            text.style.textDecoration = completed ? "line-through" : "none";
-            status.textContent = completed ? "완료" : "진행중";
+            li.className = `todo-item ${completed ? "completed" : ""}`;
+            statusSpan.className = `todo-status ${
+              completed ? "completed" : "pending"
+            }`;
+            statusSpan.textContent = completed ? "✓ 완료" : "⏳ 진행중";
 
             await fetch(`/todos/${todo.id}`, {
               method: "PUT",
@@ -60,41 +539,69 @@
                 due_date: todo.due_date || null,
               }),
             });
+            fetchTodos();
           };
 
-          // 편집/삭제 버튼
-          const editButton = document.createElement("button");
-          editButton.textContent = "Edit";
-          editButton.onclick = () => editTodo(todo.id);
-
-          const deleteButton = document.createElement("button");
-          deleteButton.textContent = "Delete";
-          deleteButton.onclick = () => deleteTodo(todo.id);
-          li.append(checkbox, text, status, due, editButton, deleteButton);
+          contentDiv.appendChild(checkbox);
+          contentDiv.appendChild(textDiv);
+          li.appendChild(contentDiv);
+          li.appendChild(metaDiv);
+          li.appendChild(actionsDiv);
           todoList.appendChild(li);
         });
       }
 
-      async function editTodo(id) {
-        const title = prompt("Enter new title:");
-        const description = prompt("Enter new description:");
-        const completed = confirm("Is this task completed?");
-        const response = await fetch(`/todos/${id}`, {
+      function openEditModal(todo) {
+        editingTodoId = todo.id;
+        document.getElementById("edit-title").value = todo.title;
+        document.getElementById("edit-description").value = todo.description;
+        document.getElementById("edit-due-date").value = todo.due_date || "";
+        document.getElementById("edit-completed").checked = todo.completed;
+        document.getElementById("edit-modal").classList.add("active");
+      }
+
+      function closeEditModal() {
+        document.getElementById("edit-modal").classList.remove("active");
+        editingTodoId = null;
+      }
+
+      async function saveEdit() {
+        if (!editingTodoId) return;
+
+        const title = document.getElementById("edit-title").value;
+        const description = document.getElementById("edit-description").value;
+        const due_date = document.getElementById("edit-due-date").value;
+        const completed = document.getElementById("edit-completed").checked;
+
+        const response = await fetch(`/todos/${editingTodoId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ id, title, description, completed }),
+          body: JSON.stringify({
+            id: editingTodoId,
+            title,
+            description,
+            completed,
+            due_date: due_date || null,
+          }),
         });
+
         if (response.ok) {
+          closeEditModal();
           fetchTodos();
         }
       }
 
       async function deleteTodo(id) {
+        if (!confirm("정말 이 할 일을 삭제하시겠습니까?")) {
+          return;
+        }
+
         const response = await fetch(`/todos/${id}`, {
           method: "DELETE",
         });
+
         if (response.ok) {
           fetchTodos();
         }
@@ -107,6 +614,7 @@
           const title = document.getElementById("title").value;
           const description = document.getElementById("description").value;
           const due_date = document.getElementById("due_date").value;
+
           const response = await fetch("/todos", {
             method: "POST",
             headers: {
@@ -120,10 +628,21 @@
               due_date: due_date || null,
             }),
           });
+
           if (response.ok) {
+            document.getElementById("title").value = "";
+            document.getElementById("description").value = "";
+            document.getElementById("due_date").value = "";
             fetchTodos();
           }
         });
+
+      // 모달 외부 클릭 시 닫기
+      document.getElementById("edit-modal").addEventListener("click", (e) => {
+        if (e.target.id === "edit-modal") {
+          closeEditModal();
+        }
+      });
 
       fetchTodos();
     </script>
