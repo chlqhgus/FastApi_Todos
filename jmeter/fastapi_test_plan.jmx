@@ -115,5 +115,43 @@
         <!-- 추가 샘플러를 필요에 따라 추가할 수 있습니다. 예를 들어 GET /metrics, POST /items, GET /items, 등 -->
       </hashTree>
     </hashTree>
+    <!-- InfluxDB Backend Listener: JMeter 결과를 InfluxDB에 저장 -->
+    <BackendListener guiclass="org.apache.jmeter.visualizers.backend.influxdb.InfluxDBBackendListenerClient" testclass="BackendListener" testname="InfluxDB Backend Listener" enabled="true">
+      <elementProp name="arguments" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="influxdbMetricsSender" elementType="Argument">
+            <stringProp name="Argument.name">influxdbMetricsSender</stringProp>
+            <stringProp name="Argument.value">org.apache.jmeter.visualizers.backend.influxdb.HttpMetricsSender</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="influxdbUrl" elementType="Argument">
+            <stringProp name="Argument.name">influxdbUrl</stringProp>
+            <stringProp name="Argument.value">${__P(influxdbUrl,http://localhost:8086)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="influxdbToken" elementType="Argument">
+            <stringProp name="Argument.name">influxdbToken</stringProp>
+            <stringProp name="Argument.value">my-super-secret-auth-token</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="influxdbOrg" elementType="Argument">
+            <stringProp name="Argument.name">influxdbOrg</stringProp>
+            <stringProp name="Argument.value">myorg</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="influxdbBucket" elementType="Argument">
+            <stringProp name="Argument.name">influxdbBucket</stringProp>
+            <stringProp name="Argument.value">jmeter</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="testName" elementType="Argument">
+            <stringProp name="Argument.name">testName</stringProp>
+            <stringProp name="Argument.value">FastAPI Performance Test</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </elementProp>
+    </BackendListener>
+    <hashTree/>
   </hashTree>
 </jmeterTestPlan>

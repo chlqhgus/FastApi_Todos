@@ -78,6 +78,23 @@ services:
     networks:
       - loadtest-net
 
+  influxdb:
+    image: influxdb:2.7
+    container_name: influxdb
+    ports:
+      - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=admin123456
+      - DOCKER_INFLUXDB_INIT_ORG=myorg
+      - DOCKER_INFLUXDB_INIT_BUCKET=jmeter
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-auth-token
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+    networks:
+      - loadtest-net
+
 networks:
   loadtest-net:
     driver: bridge
@@ -88,3 +105,4 @@ volumes:
   sonarqube_logs:
   sonarqube_extensions:
   grafana-data:
+  influxdb-data:
