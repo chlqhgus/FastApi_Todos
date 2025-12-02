@@ -70,7 +70,6 @@ services:
 
   loki:
     image: grafana/loki:latest
-    container_name: loki-new
     ports:
       - "3100:3100"
     volumes:
