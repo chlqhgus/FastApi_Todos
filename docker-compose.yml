@@ -70,12 +70,13 @@ services:
 
   loki:
     image: grafana/loki:latest
-    container_name: loki
+    container_name: loki-new
     ports:
       - "3100:3100"
     volumes:
       - ./loki/loki-config.yml:/etc/loki/local-config.yaml
     command: -config.file=/etc/loki/local-config.yaml
+    restart: unless-stopped
 
 volumes:
   sonarqube_conf:
