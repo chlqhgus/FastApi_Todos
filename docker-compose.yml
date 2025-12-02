@@ -8,8 +8,10 @@ services:
     container_name: fastapi-app
     ports:
       - "5001:5001"
-    networks:
-      - loadtest-net
+    depends_on:
+      - loki
+    environment:
+      - LOKI_ENDPOINT=http://loki:3100/loki/api/v1/push
 
   jmeter:
     build:
@@ -30,8 +32,6 @@ services:
       - -e
       - -o
       - /jmeter/report
-    networks:
-      - loadtest-net
 
   sonarqube:
     image: sonarqube:latest
@@ -45,8 +45,6 @@ services:
       - sonarqube_data:/opt/sonarqube/data
       - sonarqube_logs:/opt/sonarqube/logs
       - sonarqube_extensions:/opt/sonarqube/extensions
-    networks:
-      - loadtest-net
 
   prometheus:
     image: prom/prometheus:latest
@@ -55,8 +53,6 @@ services:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "7070:9090"
-    networks:
-      - loadtest-net
 
   grafana:
     image: grafana/grafana:latest
@@ -67,37 +63,18 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
       - grafana-data:/var/lib/grafana
-    networks:
-      - loadtest-net
 
   node-exporter:
     image: prom/node-exporter:latest
     container_name: node-exporter
     ports:
       - "7100:9100"
-    networks:
-      - loadtest-net
 
-  influxdb:
-    image: influxdb:2.7
-    container_name: influxdb
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
     ports:
-      - "8086:8086"
-    environment:
-      - DOCKER_INFLUXDB_INIT_MODE=setup
-      - DOCKER_INFLUXDB_INIT_USERNAME=admin
-      - DOCKER_INFLUXDB_INIT_PASSWORD=admin123456
-      - DOCKER_INFLUXDB_INIT_ORG=myorg
-      - DOCKER_INFLUXDB_INIT_BUCKET=jmeter
-      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-auth-token
-    volumes:
-      - influxdb-data:/var/lib/influxdb2
-    networks:
-      - loadtest-net
-
-networks:
-  loadtest-net:
-    driver: bridge
+      - "3100:3100"
 
 volumes:
   sonarqube_conf:
@@ -105,4 +82,3 @@ volumes:
   sonarqube_logs:
   sonarqube_extensions:
   grafana-data:
-  influxdb-data:
