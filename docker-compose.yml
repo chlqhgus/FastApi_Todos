@@ -1,5 +1,3 @@
-version: "3.7"
-
 services:
   fastapi-app:
     build:
@@ -63,6 +61,8 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
       - grafana-data:/var/lib/grafana
+    depends_on:
+      - loki
 
   node-exporter:
     image: prom/node-exporter:latest

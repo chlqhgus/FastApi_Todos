@@ -46,6 +46,10 @@ async def log_requests(request: Request, call_next):
 
     return response
 
+# 미들웨어 등록
+@app.middleware("http")
+async def logging_middleware(request: Request, call_next):
+    return await log_requests(request, call_next)
 
 # To-Do 항목 모델
 class TodoItem(BaseModel):
