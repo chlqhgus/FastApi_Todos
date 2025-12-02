@@ -5,6 +5,7 @@ import json
 import os
 import logging
 import time
+import threading
 from multiprocessing import Queue
 from os import getenv
 from fastapi import Request
@@ -17,9 +18,11 @@ app = FastAPI()
 # Prometheus 메트릭스 엔드포인트 (/metrics)
 Instrumentator().instrument(app).expose(app, endpoint="/metrics")
 
+# Loki 로그 핸들러 설정
+loki_endpoint = getenv("LOKI_ENDPOINT", "http://loki:3100/loki/api/v1/push")
 loki_logs_handler = LokiQueueHandler(
     Queue(-1),
-    url=getenv("LOKI_ENDPOINT"),
+    url=loki_endpoint,
     tags={"application": "fastapi"},
     version="1",
 )
@@ -27,22 +30,34 @@ loki_logs_handler = LokiQueueHandler(
 # Custom access logger (ignore Uvicorn's default logging)
 custom_logger = logging.getLogger("custom.access")
 custom_logger.setLevel(logging.INFO)
+custom_logger.propagate = False  # 중복 로깅 방지
 
-# Add Loki handler (assuming `loki_logs_handler` is correctly configured)
+# Add Loki handler
 custom_logger.addHandler(loki_logs_handler)
+
+# 로그 핸들러가 제대로 초기화되었는지 확인
+logging.info(f"Loki endpoint configured: {loki_endpoint}")
 
 async def log_requests(request: Request, call_next):
     start_time = time.time()
     response = await call_next(request)
     duration = time.time() - start_time  # Compute response time
 
+    # 클라이언트 IP와 포트 정보 추출
+    client_host = request.client.host if request.client else "unknown"
+    client_port = request.client.port if request.client else 0
+    
+    # 로그 메시지 형식: IP:PORT - "METHOD PATH HTTP/VERSION" STATUS DURATIONs
     log_message = (
-        f'{request.client.host} - "{request.method} {request.url.path} HTTP/1.1" {response.status_code} {duration:.3f}s'
+        f'{client_host}:{client_port} - "{request.method} {request.url.path} HTTP/1.1" {response.status_code} {duration:.3f}s'
     )
 
-    # **Only log if duration exists**
-    if duration:
+    # 로그 전송
+    try:
         custom_logger.info(log_message)
+    except Exception as e:
+        # 로그 전송 실패 시에도 앱이 계속 작동하도록 예외 처리
+        logging.error(f"Failed to send log to Loki: {e}")
 
     return response
 
