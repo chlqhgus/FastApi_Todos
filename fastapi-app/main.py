@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
+from typing import List, Dict, Optional
 import json
 import os
 import logging
@@ -17,19 +18,25 @@ app = FastAPI()
 # Prometheus 메트릭스 엔드포인트 (/metrics)
 Instrumentator().instrument(app).expose(app, endpoint="/metrics")
 
-loki_logs_handler = LokiQueueHandler(
-    Queue(-1),
-    url=getenv("LOKI_ENDPOINT"),
-    tags={"application": "fastapi"},
-    version="1",
-)
-
 # Custom access logger (ignore Uvicorn's default logging)
 custom_logger = logging.getLogger("custom.access")
 custom_logger.setLevel(logging.INFO)
 
-# Add Loki handler (assuming `loki_logs_handler` is correctly configured)
-custom_logger.addHandler(loki_logs_handler)
+# Add Loki handler only if LOKI_ENDPOINT is configured
+loki_endpoint = getenv("LOKI_ENDPOINT")
+if loki_endpoint:
+    loki_logs_handler = LokiQueueHandler(
+        Queue(-1),
+        url=loki_endpoint,
+        tags={"application": "fastapi"},
+        version="1",
+    )
+    custom_logger.addHandler(loki_logs_handler)
+else:
+    # Fallback to console handler for local development
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    custom_logger.addHandler(console_handler)
 
 async def log_requests(request: Request, call_next):
     start_time = time.time()
@@ -57,7 +64,13 @@ class TodoItem(BaseModel):
     title: str
     description: str
     completed: bool
-    due_date: str | None = None
+    due_date: Optional[str] = None
+    list: Optional[str] = None
+    tags: Optional[List[str]] = None
+    subtasks: Optional[List[Dict]] = None
+    
+    class Config:
+        extra = "allow"  # 추가 필드 허용
 
 # JSON 파일 경로
 TODO_FILE = "todo.json"
@@ -75,12 +88,12 @@ def save_todos(todos):
         json.dump(todos, file, indent=4)
 
 # To-Do 목록 조회
-@app.get("/todos", response_model=list[TodoItem])
+@app.get("/todos")
 def get_todos():
     return load_todos()
 
 # 신규 To-Do 항목 추가
-@app.post("/todos", response_model=TodoItem)
+@app.post("/todos")
 def create_todo(todo: TodoItem):
     todos = load_todos()
     todos.append(todo.dict())
@@ -88,7 +101,7 @@ def create_todo(todo: TodoItem):
     return todo
 
 # To-Do 항목 수정
-@app.put("/todos/{todo_id}", response_model=TodoItem)
+@app.put("/todos/{todo_id}")
 def update_todo(todo_id: int, updated_todo: TodoItem):
     todos = load_todos()
     for todo in todos:
